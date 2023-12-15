@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>Главная</title>
+    <style>
+        .bg-main{
+            background-image: url('/images/gg.jpg');
+        }
+    </style>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main</title>
+    <link href="/dist/output.css" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.9.2" integrity="sha384-L6OqL9pRWyyFU3+/bjdSri+iIphTN/bvYyM37tICVyOJkWZLpP2vGn6VUEXgzg6h" crossorigin="anonymous"></script>
+</head>
+<header>{{template "header"}}</header>
+<body>
+<div class="bg-cover bg-main bg-center flex items-center flex-col max-h-screen" id="main">
+<div class="flex w-3/5 flex-col min-h-[calc(100vh-60px)] bg-white items-center max-h-[calc(100vh-60px)] overflow-auto">
+    <H1 class="text-4xl">Это главная стричечка, воть</H1>
+    <div class="flex flex-col rounded px-8 pt-6 pb-8 mb-4 gap-y-4 flex-grow">
+        <h2 class="flex items-center font-bold text-3xl mb-2 w-full text-4lg">Волшебная сказка о бета-гамма-активности в продуктах питания</h2>
+        <div class="flex flex-col overflow-auto h-full gap-y-10 text-2xl font-medium">
+            <p class="text-gray-700 ">
+                В далекой-далекой галактике, где жили молекулы и атомы, были два брата - Бета и Гамма. Они были известны своей активностью, которую они проявляли в продуктах питания на планете Земля.
+            </p>
+            <p class="text-gray-700">
+                Бета, младший брат, был быстрым и энергичным. Он мог проникнуть в ткани на глубину до 1 см, оставляя след своего присутствия. Гамма, старший брат, был более мощным. Его электромагнитное излучение могло проникнуть глубоко в ткани, достигая мест, которые Бета не мог.
+            </p>
+            <p class="text-gray-700">
+                Их активность в продуктах питания была важной частью радиационной безопасности на Земле. Исследователи измеряли их активность, чтобы убедиться, что продукты питания безопасны для потребления.
+            </p>
+            <p class="text-gray-700">
+                Однажды, когда Бета и Гамма играли в свои любимые игры в продуктах питания, они заметили, что люди начали измерять их активность. Это было новым и интересным для них, и они решили помочь людям, делая свою активность более заметной.
+            </p>
+            <p class="text-gray-700">
+                С тех пор Бета и Гамма стали важной частью исследований в области продуктов питания. Их активность помогает ученым убедиться, что продукты питания безопасны для потребления, и они продолжают играть свою роль в этом важном процессе.
+            </p>
+        </div>
+    </div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="authoring-tool" content="Adobe_Animate_CC">
+<title>water</title>
+<!-- write your code here -->
+<script src="https://code.createjs.com/1.0.0/createjs.min.js"></script>
+
+	<script src="js/water.js"></script>
+<script>
+var canvas, stage, exportRoot, anim_container, dom_overlay_container, fnStartAnimation;
+function init() {
+	canvas = document.getElementById("canvas");
+	anim_container = document.getElementById("animation_container");
+	dom_overlay_container = document.getElementById("dom_overlay_container");
+	var comp=AdobeAn.getComposition("BCCDDE5451CEF049998D1217D317AA7F");
+	var lib=comp.getLibrary();
+	var loader = new createjs.LoadQueue(false);
+	loader.installPlugin(createjs.Sound);
+	loader.addEventListener("fileload", function(evt){handleFileLoad(evt,comp)});
+	loader.addEventListener("complete", function(evt){handleComplete(evt,comp)});
+	var lib=comp.getLibrary();
+	loader.loadManifest(lib.properties.manifest);
+}
+function handleFileLoad(evt, comp) {
+	var images=comp.getImages();	
+	if (evt && (evt.item.type == "image")) { images[evt.item.id] = evt.result; }	
+}
+function handleComplete(evt,comp) {
+	var lib=comp.getLibrary();
+	var ss=comp.getSpriteSheet();
+	var queue = evt.target;
+	var ssMetadata = lib.ssMetadata;
+	for(i=0; i<ssMetadata.length; i++) {
+		ss[ssMetadata[i].name] = new createjs.SpriteSheet( {"images": [queue.getResult(ssMetadata[i].name)], "frames": ssMetadata[i].frames} )
+	}
+	exportRoot = new lib.water();
+	stage = new lib.Stage(canvas);
+	stage.enableMouseOver();	
+	fnStartAnimation = function() {
+		stage.addChild(exportRoot);
+		createjs.Ticker.framerate = lib.properties.fps;
+		createjs.Ticker.addEventListener("tick", stage);
+	}	    
+	AdobeAn.makeResponsive(false,'both',false,1,[canvas,anim_container,dom_overlay_container]);
+	AdobeAn.compositionLoaded(lib.properties.id);
+	fnStartAnimation();
+}
+function playSound(id, loop, offset) {
+	return createjs.Sound.play(id, {'interrupt':createjs.Sound.INTERRUPT_EARLY, 'loop': loop, 'offset': offset});}
+</script>
+	<link href="/dist/output.css" rel="stylesheet">
+</head>
+<header style="position: absolute"> <div class="flex w-screen h-[60px] bg-white border-b-2 border-gray-200 justify-center">
+	<div class="w-3/5 h-full flex justify-center items-center gap-x-4 text-xl">
+		<a  href="/">Главная</a>
+		<a  href="/preview">Текст + Кртиночки</a>
+		<a  href="/struct">Структура</a>
+		<a  href="/stand">Установка</a>
+
+	</div>
+</div></header>
+
+<body onload="init();" style="margin:0px; max-height: 100vh; max-width: 100vw; overflow: hidden">
+<div class="flex items-center justify-center h-screen overflow-hidden" id="main">
+	<div class="flex w-full flex-col bg-white items-center justify-center" >
+		<div id="animation_container" style="background-color:rgba(255, 255, 255, 1.00); width: 100% !important; height: 100% !important;">
+			<canvas id="canvas" style=" display: block; background-color:rgba(255, 255, 255, 1.00);"></canvas>
+			<div id="dom_overlay_container" style="pointer-events:none; overflow:hidden; left: 0px; top: 0px; display: block;">
+			</div>
+		</div>
+<!--		<video width="100%" height="100%" controls>-->
+<!--			<source src="./sounds/shitVid.avi" type="video/avi">-->
+<!--			Ваш браузер не поддерживает тег video.-->
+<!--		</video>-->
+		<div class="absolute bottom-0  transform mb-4 text-3xl">Ну там есть банка с водой, без воды, банки поменьше, цветок на фоне, и бытовой дозиметр-радиометр</div>
+	</div>
+
+
+</div>
+</body>
+
+
+
+</html>
