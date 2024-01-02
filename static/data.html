@@ -18,8 +18,12 @@
 <body>
 <div class="bg-cover bg-main bg-center flex items-center flex-col max-h-screen" id="main">
     <div class="flex w-3/5 flex-col min-h-[calc(100vh-60px)] mx-4 bg-white max-h-[calc(100vh-60px)] overflow-auto gap-y-4">
-        {{range .}}
-        {{template "dataBlock" .}}
+        {{range $index, $element := .}}
+        <div class="">
+            {{range $subIndex, $subElement := $element}}
+            <div>{{$subElement}}{{if lt $subIndex 2}},{{end}}</div>
+            {{end}}
+        </div>
         {{end}}
         </div>
 </div>
