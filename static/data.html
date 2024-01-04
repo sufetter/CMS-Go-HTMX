@@ -2,30 +2,85 @@
 <html lang="ru">
 <head>
     <title>Главная</title>
+    <link href="/dist/output.css" rel="stylesheet">
     <style>
         .bg-main{
             background-image: url('/images/gg.jpg');
+        }
+        .min-w {
+            min-width: 300px;
+            min-height: 300px;
+            max-width: 700px;
+        }
+        .min-h{
+            min-height: 300px;
         }
     </style>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Main</title>
-    <link href="/dist/output.css" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@1.9.2" integrity="sha384-L6OqL9pRWyyFU3+/bjdSri+iIphTN/bvYyM37tICVyOJkWZLpP2vGn6VUEXgzg6h" crossorigin="anonymous"></script>
 </head>
 <header>{{template "header"}}</header>
 <body>
 <div class="bg-cover bg-main bg-center flex items-center flex-col max-h-screen" id="main">
     <div class="flex w-3/5 flex-col min-h-[calc(100vh-60px)] mx-4 bg-white max-h-[calc(100vh-60px)] overflow-auto gap-y-4">
-        {{range $index, $element := .}}
-        <div class="">
-            {{range $subIndex, $subElement := $element}}
-            <div>{{$subElement}}{{if lt $subIndex 2}},{{end}}</div>
-            {{end}}
+        <div class="flex items-center justify-center">
+            <dialog id="myDialog" class="p-6 rounded shadow-md">
+                <form id="myForm" hx-post="/api/knowledge" hx-target="#history" hx-swap="beforeend" class="flex w-full min-w flex-col gap-y-4 space-y-4">
+                    <div id="history" class="border border-gray-300 p-2 rounded overflow-auto min-h flex flex-col gap-y-4" style="height: 200px;"></div>
+                    <input id="question" type="text" name="question" placeholder="Введите строку" required class="w-full p-2 border border-gray-300 rounded">
+                    <button id="submitBtn" type="submit" class="w-full p-2 rounded mt-4 border border-gray-200">Отправить</button>
+                </form>
+                <div class="flex w-full gap-x-4"><button onclick="toggleDictation()" class="mt-4 w-full p-2 rounded border border-gray-200">Начать/остановить диктовку</button>
+                <button onclick="document.getElementById('myDialog').close()" class="mt-4 w-full p-2 rounded border border-gray-200">Закрыть</button></div>
+
+            </dialog>
+
+            <button onclick="document.getElementById('myDialog').showModal()" class="mt-4 w-full p-2 rounded">Открыть модальное окно</button>
+
         </div>
-        {{end}}
+        <div class="flex flex-col gap-y-4">
+            {{range $index, $element := .}}
+            <div class="">
+                {{range $subIndex, $subElement := $element}}
+                <div>{{$subElement}}{{if lt $subIndex 2}},{{end}}</div>
+                {{end}}
+            </div>
+            {{end}}</div>
         </div>
 </div>
 </body>
+<script>
+    var recognition;
+    var isRecording = false;
+
+    function toggleDictation() {
+        if (window.hasOwnProperty('webkitSpeechRecognition')) {
+            recognition = recognition || new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = "ru-RU";
+
+            if (!isRecording) {
+                recognition.start();
+                isRecording = true;
+            } else {
+                recognition.stop();
+                isRecording = false;
+            }
+
+            recognition.onresult = function(e) {
+                document.getElementById('question').value = e.results[0][0].transcript;
+                htmx.trigger(document.getElementById('myForm'), 'submit'); // Изменено здесь
+            };
+
+            recognition.onerror = function(e) {
+                recognition.stop();
+                isRecording = false;
+            }
+        }
+    }
+</script>
 </html>

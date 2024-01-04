@@ -1,0 +1,9 @@
+{{define "answerBlock"}}
+<div class=" border-gray-200 border-b-2 rounded">
+    <p>Запрос: {{ .Question}}</p>
+    <p>Ответ: {{ .Answer}}</p>
+    {{if .IsImage}}
+    <div class="flex justify-center"><img src={{.ImagePath}} style="max-width: 30%; max-height: 30%; padding: 10px" alt="Изображение"></div>
+    {{end}}
+</div>
+{{end}}

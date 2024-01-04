@@ -1,35 +1,40 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"html/template"
-	"io"
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
+	"strings"
 )
 
 const (
 	defaultPort = "3000"
 )
 
-// JSON structs for templates
-type infoBlock struct {
+// JSON structs for templates, TO DO: convert it to a two-dimensional array
+
+type InfoBlock struct {
 	Title string
 	Body  string
 }
 
-type pseudoEndingBlock struct {
-	Ending string
-	Regex  string
+type BaseResponse struct {
+	Answer    string
+	Question  string
+	IsImage   bool
+	ImagePath string
 }
 
-var blacklist []string = []string{"замена", "замены", "атрибут", "маршрут", "член", "нет"}
+var blacklist = []string{"замена", "замены", "атрибут", "маршрут", "член", "нет"}
+
+var data *Data
 
 func main() {
-	//parseAnswer("уга бугагде беккерель производиться ыаы")
+	//data.ParseAnswer("уга беккурель производит что?")
+
 	handleStaticFiles()
 	http.HandleFunc("/", getMain)
 	http.HandleFunc("/struct", getStruct)
@@ -37,6 +42,7 @@ func main() {
 	http.HandleFunc("/stand", getStand)
 	http.HandleFunc("/knowledge", getKnowledge)
 	http.HandleFunc("/api/knowledge", getBaseData)
+
 	port := getPort()
 	log.Printf("Server started: %s\n", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
@@ -79,13 +85,13 @@ func getMain(w http.ResponseWriter, r *http.Request) {
 }
 
 func getPreview(w http.ResponseWriter, r *http.Request) {
-	var blocks []infoBlock
+	var blocks []InfoBlock
 	err := readJSON("./static/data_json/info.json", &blocks)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	executeTemplate(w, []string{"./static/preview.html", "./static/data_block/infoBlock.html", "./static/data_block/header.html"}, blocks)
+	executeTemplate(w, []string{"./static/preview.html", "./static/data_block/InfoBlock.html", "./static/data_block/header.html"}, blocks)
 }
 
 func getStruct(w http.ResponseWriter, r *http.Request) {
@@ -107,17 +113,54 @@ func getKnowledge(w http.ResponseWriter, r *http.Request) {
 }
 
 func getBaseData(w http.ResponseWriter, r *http.Request) {
-	answer, err := parseAnswer(r.FormValue("answer"))
+	question := r.FormValue("question")
+	answer, err := data.ParseAnswer(question)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if answer == "" {
-		executeTemplate(w, []string{"./static/data_block/notFoundBlock.html"}, nil)
-		return
 
+	imagePath := ""
+	isImage := false
+	if strings.Contains(answer, "src") {
+		re := regexp.MustCompile(`src=\{([^}]*)}`)
+		match := re.FindStringSubmatch(answer)
+		if len(match) > 1 {
+			imagePath = match[1]
+			isImage = true
+			answer = strings.Replace(answer, match[0], "", -1)
+		}
 	}
-	executeTemplate(w, []string{""}, answer)
+
+	switch answer {
+	case "":
+		tmpl, _ := template.ParseFiles("./static/data_block/notFoundBlock.html")
+		err = tmpl.ExecuteTemplate(w, "notFoundBlock", "Ответ не найден")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	case "Сказуемое не найдено":
+		tmpl, _ := template.ParseFiles("./static/data_block/notFoundBlock.html")
+		err = tmpl.ExecuteTemplate(w, "notFoundBlock", "Сказуемое не найдено")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	default:
+		tmpl, _ := template.ParseFiles("./static/data_block/answerBlock.html")
+		data := BaseResponse{
+			Answer:    answer,
+			Question:  question,
+			IsImage:   isImage,
+			ImagePath: imagePath,
+		}
+		err = tmpl.ExecuteTemplate(w, "answerBlock", data)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
 }
 
 func executeTemplate(w http.ResponseWriter, files []string, data interface{}) {
@@ -127,28 +170,4 @@ func executeTemplate(w http.ResponseWriter, files []string, data interface{}) {
 		http.Error(w, "Failed to execute template: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-}
-
-func readJSON(filename string, data interface{}) error {
-	jsonFile, err := os.Open(filename)
-	if err != nil {
-		return fmt.Errorf("failed to open JSON file: %w", err)
-	}
-	defer func() {
-		if closeErr := jsonFile.Close(); closeErr != nil {
-			log.Printf("Failed to close JSON file: %v", closeErr)
-		}
-	}()
-
-	byteValue, err := io.ReadAll(jsonFile)
-	if err != nil {
-		return fmt.Errorf("failed to read JSON file: %w", err)
-	}
-
-	err = json.Unmarshal(byteValue, data)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal JSON: %w", err)
-	}
-
-	return nil
 }

@@ -1,47 +1,28 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"regexp"
 	"strings"
 	"unicode"
 )
 
-func parseAnswer(question string) (string, error) {
-	var endings [][]string
-	err := readJSON("./static/data_json/endings.json", &endings)
+func (d *Data) ParseAnswer(question string) (string, error) {
+	cleanQuestion, err := cleanInput(question)
 	if err != nil {
-		return "", fmt.Errorf("failed to read JSON file: %w", err)
+		return "", err
 	}
-	var data [][]string
-	err = readJSON("./static/data_json/data.json", &data)
-	if err != nil {
-		return "", fmt.Errorf("failed to read JSON file: %w", err)
-	}
-	cleanQuestion := cleanInput(question)
-	answer := getAnswer(cleanQuestion, endings, blacklist, data)
-	log.Printf(answer)
+	answer := d.GetAnswer(cleanQuestion, blacklist)
+	//log.Print(answer)
 	return answer, nil
 }
 
-func getAnswerBySubject(subjectWords []string, data [][]string) string {
-	for _, entry := range data {
-		for _, subject := range subjectWords {
-			for _, wordInEntry := range strings.Fields(entry[0]) {
-				if levenshtein(wordInEntry, subject) <= 2 {
-					firstLetter := []rune(entry[0])
-					firstLetter[0] = unicode.ToUpper(firstLetter[0])
-					return string(firstLetter) + " " + entry[1] + " " + entry[2]
-				}
-			}
-		}
-	}
-	return ""
-}
+//the attempt to implement the use of goroutines here completely failed;
+//too many additional operations need to be implemented for them to work correctly.
+//it was decided to optimize the algorithmic component.
+//Due to the lack of enough time, I’m not sure that the problem was solved optimally, BUT IT WORKS!
 
-func getAnswer(question string, pseudoEndings [][]string, blacklist []string, data [][]string) string {
-	predicate, index := findPredicate(question, pseudoEndings, blacklist)
+func (d *Data) GetAnswer(question string, blacklist []string) string {
+	predicate, index := findPredicate(question, d.Endings, blacklist)
 	if index == -1 {
 		return "Сказуемое не найдено"
 	}
@@ -49,7 +30,7 @@ func getAnswer(question string, pseudoEndings [][]string, blacklist []string, da
 	subjectWords := strings.Fields(strings.Join(words[:index], " "))
 	additionalWords := strings.Fields(strings.Join(words[index+1:], " "))
 
-	for _, entry := range data {
+	for _, entry := range d.Data {
 		if levenshtein(entry[1], predicate) <= 2 {
 			subjectMatch := false
 			for _, subject := range subjectWords {
@@ -82,7 +63,22 @@ func getAnswer(question string, pseudoEndings [][]string, blacklist []string, da
 			}
 		}
 	}
-	return getAnswerBySubject(subjectWords, data)
+	return d.GetAnswerBySubject(subjectWords)
+}
+
+func (d *Data) GetAnswerBySubject(subjectWords []string) string {
+	for _, entry := range d.Data {
+		for _, subject := range subjectWords {
+			for _, wordInEntry := range strings.Fields(entry[0]) {
+				if levenshtein(wordInEntry, subject) <= 2 {
+					firstLetter := []rune(entry[0])
+					firstLetter[0] = unicode.ToUpper(firstLetter[0])
+					return string(firstLetter) + " " + entry[1] + " " + entry[2]
+				}
+			}
+		}
+	}
+	return ""
 }
 
 func findPredicate(sentence string, pseudoEndings [][]string, blacklist []string) (string, int) {
@@ -110,42 +106,33 @@ func contains(slice []string, item string) bool {
 	return false
 }
 
-func cleanInput(input string) string {
-	reg, err := regexp.Compile("[^a-zA-Zа-яА-Я0-9]+")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	processedString := reg.ReplaceAllString(input, " ")
-	processedString = strings.ToLower(processedString)
-
-	return processedString
-}
-
 func levenshtein(a, b string) int {
-	if len(a) == 0 {
-		return len(b)
+	ar := []rune(a)
+	br := []rune(b)
+
+	if len(ar) == 0 {
+		return len(br)
 	}
-	if len(b) == 0 {
-		return len(a)
+	if len(br) == 0 {
+		return len(ar)
 	}
 
-	matrix := make([][]int, len(a)+1)
+	matrix := make([][]int, len(ar)+1)
 	for i := range matrix {
-		matrix[i] = make([]int, len(b)+1)
+		matrix[i] = make([]int, len(br)+1)
 	}
 
-	for i := 1; i <= len(a); i++ {
+	for i := 1; i <= len(ar); i++ {
 		matrix[i][0] = i
 	}
 
-	for j := 1; j <= len(b); j++ {
+	for j := 1; j <= len(br); j++ {
 		matrix[0][j] = j
 	}
 
-	for j := 1; j <= len(b); j++ {
-		for i := 1; i <= len(a); i++ {
-			if a[i-1] == b[j-1] {
+	for j := 1; j <= len(br); j++ {
+		for i := 1; i <= len(ar); i++ {
+			if ar[i-1] == br[j-1] {
 				matrix[i][j] = matrix[i-1][j-1]
 			} else {
 				matrix[i][j] = min(
@@ -157,7 +144,7 @@ func levenshtein(a, b string) int {
 		}
 	}
 
-	return matrix[len(a)][len(b)]
+	return matrix[len(ar)][len(br)]
 }
 
 //func checkEndings() error {
