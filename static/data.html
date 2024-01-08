@@ -37,6 +37,7 @@
                     <button id="submitBtn" type="submit" class="w-full p-2 rounded mt-4 border border-gray-200">Отправить</button>
                 </form>
                 <div class="flex w-full gap-x-4"><button onclick="toggleDictation()" class="mt-4 w-full p-2 rounded border border-gray-200">Начать/остановить диктовку</button>
+                    <button onclick="deleteHistory()" class="mt-4 w-full p-2 rounded border border-gray-200">Очистить историю</button>
                 <button onclick="document.getElementById('myDialog').close()" class="mt-4 w-full p-2 rounded border border-gray-200">Закрыть</button></div>
             </dialog>
             <button onclick="document.getElementById('myDialog').showModal()" class="mt-4 w-full p-2 rounded">Открыть модальное окно</button>
@@ -58,15 +59,23 @@
 </body>
 <script>
     let recognition;
-    let history = document.getElementById('history');
+    let histored = document.getElementById('history');
     let isRecording = false;
     let isSpeaking = false;
     let utterance = new SpeechSynthesisUtterance();
 
+    document.addEventListener('DOMContentLoaded', function(){
+        let savedHistory = localStorage.getItem('history');
+        if(savedHistory) {
+            histored.innerHTML = savedHistory;
+        }
+    });
+
     document.getElementById('myForm').addEventListener('submit', function(){
         setTimeout(function(){
+            localStorage.setItem('history', histored.innerHTML);
             document.getElementById('question').value = '';
-            history.lastElementChild.scrollIntoView();
+            histored.lastElementChild.scrollIntoView();
         }, 200);
     });
 
@@ -110,5 +119,9 @@
         isSpeaking = false;
     }
 
+    function deleteHistory(){
+        localStorage.removeItem('history');
+        histored.innerHTML = '';
+    }
 </script>
 </html>
