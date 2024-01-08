@@ -91,7 +91,7 @@ func getPreview(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	executeTemplate(w, []string{"./static/preview.html", "./static/data_block/InfoBlock.html", "./static/data_block/header.html"}, blocks)
+	executeTemplate(w, []string{"./static/preview.html", "./static/data_block/infoBlock.html", "./static/data_block/header.html"}, blocks)
 }
 
 func getStruct(w http.ResponseWriter, r *http.Request) {
@@ -138,6 +138,7 @@ func getBaseData(w http.ResponseWriter, r *http.Request) {
 		err = tmpl.ExecuteTemplate(w, "notFoundBlock", "Ответ не найден")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Fatal(err)
 			return
 		}
 	case "Сказуемое не найдено":
@@ -145,6 +146,7 @@ func getBaseData(w http.ResponseWriter, r *http.Request) {
 		err = tmpl.ExecuteTemplate(w, "notFoundBlock", "Сказуемое не найдено")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Fatal(err)
 			return
 		}
 	default:
@@ -158,6 +160,7 @@ func getBaseData(w http.ResponseWriter, r *http.Request) {
 		err = tmpl.ExecuteTemplate(w, "answerBlock", data)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Fatal(err)
 			return
 		}
 	}

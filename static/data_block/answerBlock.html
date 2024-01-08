@@ -2,8 +2,9 @@
 <div class=" border-gray-200 border-b-2 rounded">
     <p>Запрос: {{ .Question}}</p>
     <p>Ответ: {{ .Answer}}</p>
+    <div class="flex justify-center my-4"><button class="border border-gray-200 rounded p-2" hx-swap="none" hx-trigger='click once' onclick='speak(event, "{{ .Answer }}")'>Произнести/Прервать текст</button></div>
     {{if .IsImage}}
-    <div class="flex justify-center"><img src={{.ImagePath}} style="max-width: 30%; max-height: 30%; padding: 10px" alt="Изображение"></div>
+    <div class="flex justify-center"><img src={{.ImagePath}} style="height: 100%; width: 100%; max-height: 300px; max-width: 360px; margin:10px; border-radius: 20px; border: 2px solid rgb(229 231 235); object-fit: cover;" alt="Изображение"></div>
     {{end}}
 </div>
 {{end}}

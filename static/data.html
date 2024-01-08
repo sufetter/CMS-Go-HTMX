@@ -8,12 +8,15 @@
             background-image: url('/images/gg.jpg');
         }
         .min-w {
-            min-width: 300px;
-            min-height: 300px;
+            min-width: 400px;
+            min-height: 400px;
             max-width: 700px;
         }
         .min-h{
-            min-height: 300px;
+            min-height: 400px;
+        }
+        .smooth{
+            scroll-behavior: smooth;
         }
     </style>
     <meta charset="UTF-8">
@@ -29,19 +32,20 @@
         <div class="flex items-center justify-center">
             <dialog id="myDialog" class="p-6 rounded shadow-md">
                 <form id="myForm" hx-post="/api/knowledge" hx-target="#history" hx-swap="beforeend" class="flex w-full min-w flex-col gap-y-4 space-y-4">
-                    <div id="history" class="border border-gray-300 p-2 rounded overflow-auto min-h flex flex-col gap-y-4" style="height: 200px;"></div>
+                    <div id="history" class="border border-gray-300 p-2 rounded overflow-auto min-h flex flex-col gap-y-4 smooth" style="height: 200px;"></div>
                     <input id="question" type="text" name="question" placeholder="Введите строку" required class="w-full p-2 border border-gray-300 rounded">
                     <button id="submitBtn" type="submit" class="w-full p-2 rounded mt-4 border border-gray-200">Отправить</button>
                 </form>
                 <div class="flex w-full gap-x-4"><button onclick="toggleDictation()" class="mt-4 w-full p-2 rounded border border-gray-200">Начать/остановить диктовку</button>
                 <button onclick="document.getElementById('myDialog').close()" class="mt-4 w-full p-2 rounded border border-gray-200">Закрыть</button></div>
-
             </dialog>
-
             <button onclick="document.getElementById('myDialog').showModal()" class="mt-4 w-full p-2 rounded">Открыть модальное окно</button>
-
         </div>
-        <div class="flex flex-col gap-y-4">
+        <!--    Fricking Tailwing not working, why? IDK I see styles like px-4 in the .css file and
+        im sure that im
+        using that css file, but nothing working,
+        browser just cannot find this style. 10 minutes on backend and 100 to make div center     -->
+        <div class="flex flex-col gap-y-4 px-4" style="padding: 0 10px">
             {{range $index, $element := .}}
             <div class="">
                 {{range $subIndex, $subElement := $element}}
@@ -53,8 +57,18 @@
 </div>
 </body>
 <script>
-    var recognition;
-    var isRecording = false;
+    let recognition;
+    let history = document.getElementById('history');
+    let isRecording = false;
+    let isSpeaking = false;
+    let utterance = new SpeechSynthesisUtterance();
+
+    document.getElementById('myForm').addEventListener('submit', function(){
+        setTimeout(function(){
+            document.getElementById('question').value = '';
+            history.lastElementChild.scrollIntoView();
+        }, 200);
+    });
 
     function toggleDictation() {
         if (window.hasOwnProperty('webkitSpeechRecognition')) {
@@ -62,7 +76,6 @@
             recognition.continuous = false;
             recognition.interimResults = false;
             recognition.lang = "ru-RU";
-
             if (!isRecording) {
                 recognition.start();
                 isRecording = true;
@@ -70,17 +83,32 @@
                 recognition.stop();
                 isRecording = false;
             }
-
             recognition.onresult = function(e) {
                 document.getElementById('question').value = e.results[0][0].transcript;
-                htmx.trigger(document.getElementById('myForm'), 'submit'); // Изменено здесь
+                htmx.trigger(document.getElementById('myForm'), 'submit');
             };
-
             recognition.onerror = function(e) {
                 recognition.stop();
                 isRecording = false;
             }
         }
     }
+
+    function speak(event, text) {
+        event.stopPropagation();
+        if (isSpeaking) {
+            window.speechSynthesis.cancel();
+            isSpeaking = false;
+        } else {
+            utterance.text = text;
+            window.speechSynthesis.speak(utterance);
+            isSpeaking = true;
+        }
+    }
+
+    utterance.onend = function(event) {
+        isSpeaking = false;
+    }
+
 </script>
 </html>
