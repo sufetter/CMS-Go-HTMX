@@ -16,16 +16,16 @@ const (
 
 // JSON structs for templates, TO DO: convert it to a two-dimensional array
 
-type InfoBlock struct {
-	Title string
-	Body  string
-}
-
 type BaseResponse struct {
 	Answer    string
 	Question  string
 	IsImage   bool
 	ImagePath string
+}
+
+type NotFoundResponse struct {
+	Question string
+	Error    string
 }
 
 var blacklist = []string{"замена", "замены", "атрибут", "маршрут", "член", "нет"}
@@ -85,13 +85,13 @@ func getMain(w http.ResponseWriter, r *http.Request) {
 }
 
 func getPreview(w http.ResponseWriter, r *http.Request) {
-	var blocks []InfoBlock
+	var blocks [][]string
 	err := readJSON("./static/data_json/info.json", &blocks)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	executeTemplate(w, []string{"./static/preview.html", "./static/data_block/infoBlock.html", "./static/data_block/header.html"}, blocks)
+	executeTemplate(w, []string{"./static/preview.html", "./static/data_block/header.html"}, blocks)
 }
 
 func getStruct(w http.ResponseWriter, r *http.Request) {
@@ -109,7 +109,7 @@ func getKnowledge(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	executeTemplate(w, []string{"./static/data.html", "./static/data_block/dataBlock.html", "./static/data_block/header.html"}, triads)
+	executeTemplate(w, []string{"./static/data.html", "./static/data_block/header.html"}, triads)
 }
 
 func getBaseData(w http.ResponseWriter, r *http.Request) {
@@ -136,6 +136,11 @@ func getBaseData(w http.ResponseWriter, r *http.Request) {
 	case "":
 		tmpl, _ := template.ParseFiles("./static/data_block/notFoundBlock.html")
 		err = tmpl.ExecuteTemplate(w, "notFoundBlock", "Ответ не найден")
+		data := NotFoundResponse{
+			Question: question,
+			Error:    "Ответ не найден",
+		}
+		err = tmpl.ExecuteTemplate(w, "notFoundBlock", data)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			log.Fatal(err)
@@ -143,7 +148,12 @@ func getBaseData(w http.ResponseWriter, r *http.Request) {
 		}
 	case "Сказуемое не найдено":
 		tmpl, _ := template.ParseFiles("./static/data_block/notFoundBlock.html")
-		err = tmpl.ExecuteTemplate(w, "notFoundBlock", "Сказуемое не найдено")
+		data := NotFoundResponse{
+			Question: question,
+			Error:    "Сказуемое не найдено",
+		}
+		err = tmpl.ExecuteTemplate(w, "notFoundBlock", data)
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			log.Fatal(err)

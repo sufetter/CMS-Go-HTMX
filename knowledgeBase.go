@@ -3,7 +3,6 @@ package main
 import (
 	"regexp"
 	"strings"
-	"unicode"
 )
 
 func (d *Data) ParseAnswer(question string) (string, error) {
@@ -27,23 +26,33 @@ func (d *Data) GetAnswer(question string, blacklist []string) string {
 		return "Сказуемое не найдено"
 	}
 	words := strings.Fields(question)
-	subjectWords := strings.Fields(strings.Join(words[:index], " "))
-	additionalWords := strings.Fields(strings.Join(words[index+1:], " "))
+	subjectWords := []string{}
+	additionalWords := []string{}
+
+	if len(words) > index+1 {
+		subjectWords = strings.Fields(strings.Join(words[index+1:index+2], " "))
+		additionalWords = strings.Fields(strings.Join(words[index+2:], " "))
+	}
 
 	for _, entry := range d.Data {
 		if levenshtein(entry[1], predicate) <= 2 {
 			subjectMatch := false
 			for _, subject := range subjectWords {
-				for _, wordInEntry := range strings.Fields(entry[0]) {
+				for _, wordInEntry := range append(strings.Fields(entry[0]), strings.Fields(entry[2])...) {
 					if levenshtein(wordInEntry, subject) <= 5 {
 						subjectMatch = true
 						break
 					}
 				}
 				if subjectMatch {
-					break
+					return formatAnswer(entry)
 				}
 			}
+		}
+	}
+
+	for _, entry := range d.Data {
+		if levenshtein(entry[1], predicate) <= 2 {
 			additionalMatch := false
 			for _, additional := range additionalWords {
 				for _, wordInEntry := range strings.Fields(entry[2]) {
@@ -53,27 +62,29 @@ func (d *Data) GetAnswer(question string, blacklist []string) string {
 					}
 				}
 				if additionalMatch {
-					break
+					return formatAnswer(entry)
 				}
-			}
-			if subjectMatch || additionalMatch {
-				firstLetter := []rune(entry[0])
-				firstLetter[0] = unicode.ToUpper(firstLetter[0])
-				return string(firstLetter) + " " + entry[1] + " " + entry[2]
 			}
 		}
 	}
+
+	for _, entry := range d.Data {
+		if levenshtein(entry[1], predicate) <= 2 {
+			return formatAnswer(entry)
+		}
+	}
+
 	return d.GetAnswerBySubject(subjectWords)
 }
 
 func (d *Data) GetAnswerBySubject(subjectWords []string) string {
 	for _, entry := range d.Data {
 		for _, subject := range subjectWords {
-			for _, wordInEntry := range strings.Fields(entry[0]) {
-				if levenshtein(wordInEntry, subject) <= 2 {
-					firstLetter := []rune(entry[0])
-					firstLetter[0] = unicode.ToUpper(firstLetter[0])
-					return string(firstLetter) + " " + entry[1] + " " + entry[2]
+			for _, column := range []int{0, 2} {
+				for _, wordInEntry := range strings.Fields(entry[column]) {
+					if levenshtein(wordInEntry, subject) <= 2 {
+						return formatAnswer(entry)
+					}
 				}
 			}
 		}
@@ -88,8 +99,17 @@ func findPredicate(sentence string, pseudoEndings [][]string, blacklist []string
 			continue
 		}
 		for _, pair := range pseudoEndings {
-			re := regexp.MustCompile(pair[1])
+			re := regexp.MustCompile(pair[1] + "$")
 			if re.MatchString(word) {
+				//if pair[0] == pair[1] {
+				//	log.Printf("%v", words[i+1])
+				//
+				//	if i+1 < len(words) {
+				//		return words[i+1], i + 1
+				//	}
+				//} else {
+				//	return word, i
+				//}
 				return word, i
 			}
 		}

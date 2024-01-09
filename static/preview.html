@@ -41,10 +41,15 @@
 <div class="bg-main bg-cover bg-center flex items-center flex-col max-h-screen" id="main">
     <div class="flex w-3/5 flex-col min-h-[calc(100vh-60px)] bg-white max-h-[calc(100vh-60px)] overflow-auto">
         <h1 class="flex w-full justify-center font-bold text-4xl my-4">Шокирующий контент, строго 18+</h1>
-        <div class="flex flex-col grow justify-between overflow-auto p-6">
-            {{range .}}
-            {{template "info" .}}
+        <div class="flex flex-col grow justify-between overflow-auto p-6 gap-y-4">
+            {{range $index, $element := .}}
+            <div class="">
+                <div class="flex w-full justify-center text-xl"><h2>{{index $element 0}}</h2></div>
+                <p>{{index $element 1}}</p>
+            </div>
             {{end}}
+
+
         </div>
         <div class="flex flex-col md:flex-row justify-between overflow-auto min-h-[200px]">
             <img src="./images/scheme.png" alt="украли схему, шакалы" class="w-full md:max-w-md zoom">

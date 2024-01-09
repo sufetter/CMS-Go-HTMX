@@ -8,6 +8,8 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"sync"
+	"unicode"
 )
 
 type Data struct {
@@ -30,24 +32,26 @@ func init() {
 
 func NewData() (*Data, error) {
 	d := &Data{}
-	resChan := make(chan Result, 2)
+	var wg sync.WaitGroup
+	wg.Add(2)
 
 	go func() {
+		defer wg.Done()
 		err := readJSON("./static/data_json/endings.json", &d.Endings)
-		resChan <- Result{Data: d.Endings, Err: err}
+		if err != nil {
+			log.Fatalf("Failed to read JSON file: %v", err)
+		}
 	}()
 
 	go func() {
+		defer wg.Done()
 		err := readJSON("./static/data_json/data.json", &d.Data)
-		resChan <- Result{Data: d.Data, Err: err}
+		if err != nil {
+			log.Fatalf("Failed to read JSON file: %v", err)
+		}
 	}()
 
-	for i := 0; i < 2; i++ {
-		res := <-resChan
-		if res.Err != nil {
-			return nil, fmt.Errorf("failed to read JSON file: %w", res.Err)
-		}
-	}
+	wg.Wait()
 
 	return d, nil
 }
@@ -86,4 +90,10 @@ func cleanInput(input string) (string, error) {
 	processedString = strings.ToLower(processedString)
 
 	return processedString, nil
+}
+
+func formatAnswer(entry []string) string {
+	firstLetter := []rune(entry[0])
+	firstLetter[0] = unicode.ToUpper(firstLetter[0])
+	return string(firstLetter) + " " + entry[1] + " " + entry[2]
 }
