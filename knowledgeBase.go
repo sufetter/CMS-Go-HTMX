@@ -15,9 +15,9 @@ func (d *Data) ParseAnswer(question string) (string, error) {
 	return answer, nil
 }
 
-//the attempt to implement the use of goroutines here completely failed;
+//The attempt to implement the use of goroutines here completely failed;
 //too many additional operations need to be implemented for them to work correctly.
-//it was decided to optimize the algorithmic component.
+//It was decided to optimize the algorithmic component.
 //Due to the lack of enough time, I’m not sure that the problem was solved optimally, BUT IT WORKS!
 
 func (d *Data) GetAnswer(question string, blacklist []string) string {
@@ -26,8 +26,8 @@ func (d *Data) GetAnswer(question string, blacklist []string) string {
 		return "Сказуемое не найдено"
 	}
 	words := strings.Fields(question)
-	subjectWords := []string{}
-	additionalWords := []string{}
+	var subjectWords []string
+	var additionalWords []string
 
 	if len(words) > index+1 {
 		subjectWords = strings.Fields(strings.Join(words[index+1:index+2], " "))
@@ -166,6 +166,9 @@ func levenshtein(a, b string) int {
 
 	return matrix[len(ar)][len(br)]
 }
+
+//Turned out that according to the technical specifications, this is not necessary...
+//I’ll leave it here just in case
 
 //func checkEndings() error {
 //	var triads [][]string

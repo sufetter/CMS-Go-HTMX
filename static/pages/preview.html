@@ -8,7 +8,7 @@
     <link href="/dist/output.css" rel="stylesheet">
     <style>
         .bg-main{
-            background-image: url('images/gg.jpg');
+            background-image: url('../images/gg.jpg');
         }
         .zoom {
             transition: transform .2s; /* Animation */
@@ -36,7 +36,7 @@
     </style>
     <script src="https://unpkg.com/htmx.org@1.9.2" integrity="sha384-L6OqL9pRWyyFU3+/bjdSri+iIphTN/bvYyM37tICVyOJkWZLpP2vGn6VUEXgzg6h" crossorigin="anonymous"></script>
 </head>
-<header> {{template "header"}}</header>
+<header> {{template "headerBlock"}}</header>
 <body>
 <div class="bg-main bg-cover bg-center flex items-center flex-col max-h-screen" id="main">
     <div class="flex w-3/5 flex-col min-h-[calc(100vh-60px)] bg-white max-h-[calc(100vh-60px)] overflow-auto">
@@ -52,9 +52,9 @@
 
         </div>
         <div class="flex flex-col md:flex-row justify-between overflow-auto min-h-[200px]">
-            <img src="./images/scheme.png" alt="украли схему, шакалы" class="w-full md:max-w-md zoom">
+            <img src="../images/scheme.png" alt="украли схему, шакалы" class="w-full md:max-w-md zoom">
             <div class="hidden-block">Картинка. Если этот текст видно сразу, то стили htmx не подгрузил, жмем f5</div>
-            <img src="./images/info_formula.png" alt="украли формулы, шизойды" class="w-full md:max-w-md zoom"/>
+            <img src="../images/info_formula.png" alt="украли формулы, шизойды" class="w-full md:max-w-md zoom"/>
             <div class="hidden-block">Формулки.</div>
         </div>
 

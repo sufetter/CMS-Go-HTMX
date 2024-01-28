@@ -17,11 +17,6 @@ type Data struct {
 	Data    [][]string
 }
 
-type Result struct {
-	Data interface{}
-	Err  error
-}
-
 func init() {
 	var err error
 	data, err = NewData()
@@ -29,6 +24,8 @@ func init() {
 		log.Fatalf("Failed to initialize data: %v", err)
 	}
 }
+
+// TO DO: make sure to use goroutines correctly
 
 func NewData() (*Data, error) {
 	d := &Data{}
