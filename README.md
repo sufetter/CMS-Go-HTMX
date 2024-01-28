@@ -3,7 +3,7 @@
 
 This project is the realization of several labs in the Computer Multimedia Systems discipline. Despite some nuances, making it was fun and I learned a lot, especially practicing Go and trying HTMX. I didn't use any third party libraries, the standard library was enough for my tasks, it's very cool in Go.
 <br/><br/>
-For sure a person who decides to look at the code of this project will have a lot of questions, now I will briefly answer the main ones below.
+For sure a person who decides to look at the code of this project will ~~go crazy~~ have a lot of questions, now I will briefly answer the main ones below.
 
 ## FAQ
 
