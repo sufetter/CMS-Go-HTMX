@@ -87,6 +87,8 @@ func getPort() string {
 }
 
 func getMain(w http.ResponseWriter, _ *http.Request) {
+	
+        //Attempts to more "deeply" track the work of the handler
 	//pc, _, _, _ := runtime.Caller(1)
 	//funcName := runtime.FuncForPC(pc).Name()
 	//log.Printf("Request received from %s", r.RemoteAddr)
@@ -96,10 +98,7 @@ func getMain(w http.ResponseWriter, _ *http.Request) {
 	//		fmt.Printf("%v: %v\n", name, h)
 	//	}
 	//}
-	//despite all my extremely persistent attempts to understand why,
-	//when I try to load any of the pages in the browser (not one of them is located on the path /),
-	//something still sends a request to the server along this path and calls the corresponding handler,
-	//which ruins normal operation with sending templates to the client, it's sad
+	
 	err := executeTemplate(w, []string{"index", "headerBlock"}, nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
